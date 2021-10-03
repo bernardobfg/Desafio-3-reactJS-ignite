@@ -102,7 +102,7 @@ export const getStaticProps: GetStaticProps = async () => {
     [Prismic.predicates.at('document.type', 'post')],
     {
       fetch: ['post.title', 'post.subtitle', 'post.author', 'post.content'],
-      pageSize: 1,
+      pageSize: 2,
     }
   );
   const results = postsResponse.results.map(post => {
@@ -113,9 +113,13 @@ export const getStaticProps: GetStaticProps = async () => {
         subtitle: post.data.subtitle,
         author: post.data.author,
       },
-      first_publication_date: format(new Date(), 'd MMM yyyy', {
-        locale: ptBR,
-      }),
+      first_publication_date: format(
+        new Date(post.first_publication_date),
+        'd MMM yyyy',
+        {
+          locale: ptBR,
+        }
+      ),
     };
   });
   const { next_page } = postsResponse;
