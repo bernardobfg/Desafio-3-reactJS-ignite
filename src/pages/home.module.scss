@@ -8,13 +8,19 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    width: 700px;
+    margin: 0 auto;
+  }
+  @media(max-width: 992px){
+    width: 90%;
   }
 }
 
 
 .postList{
-  width: 700px;
-  margin: 2rem auto 4rem;
+
+  margin: 2rem 0 4rem;
+
 
   a + a{
     margin-top: 4rem;

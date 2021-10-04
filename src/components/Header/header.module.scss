@@ -12,5 +12,14 @@
     img{
       cursor: pointer;
     }
+
+  }
+
+  @media (max-width: 768px){
+    padding: 0 3rem;
+
+    div{
+      justify-content: center;
+    }
   }
 }
