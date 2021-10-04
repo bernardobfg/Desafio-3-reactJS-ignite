@@ -1,9 +1,11 @@
 import { ptBR } from 'date-fns/locale';
 import { GetStaticPaths, GetStaticProps } from 'next';
 import { format } from 'date-fns';
+import Prismic from '@prismicio/client';
 import { RichText } from 'prismic-dom';
 import { ReactNode } from 'react';
 import { FiCalendar, FiClock, FiUser } from 'react-icons/fi';
+import { useRouter } from 'next/router';
 import Header from '../../components/Header';
 
 import { getPrismicClient } from '../../services/prismic';
@@ -33,6 +35,22 @@ interface PostProps {
 }
 
 export default function Post({ post }: PostProps): ReactNode {
+  const { isFallback } = useRouter();
+
+  if (isFallback) {
+    return <span>Carregando...</span>;
+  }
+  const wordsPerMinutes = 200;
+  const calcTime = (): number => {
+    const numberOfWords = post.data.content.reduce((acc, next) => {
+      const total_heading = next.heading.split(' ').length;
+      const total_body = next.body.reduce((acc_body, next_body) => {
+        return acc_body + next_body.text.split(' ').length;
+      }, 0);
+      return acc + total_body + total_heading;
+    }, 0);
+    return Math.ceil(numberOfWords / wordsPerMinutes);
+  };
   return (
     <div className={commonStyles.container}>
       <Header />
@@ -43,7 +61,11 @@ export default function Post({ post }: PostProps): ReactNode {
           <div className={`${commonStyles.info} ${styles.info}`}>
             <span>
               <FiCalendar />
-              <p>{post.first_publication_date}</p>
+              <p>
+                {format(new Date(post.first_publication_date), 'd MMM yyyy', {
+                  locale: ptBR,
+                })}
+              </p>
             </span>
             <span>
               <FiUser />
@@ -51,17 +73,20 @@ export default function Post({ post }: PostProps): ReactNode {
             </span>
             <span>
               <FiClock />
-              <p>5 minutos</p>
+              <p>{calcTime()} min</p>
             </span>
           </div>
           <div className={`${styles.content} `}>
             {post.data.content.map((content, index) => {
               return (
+                // eslint-disable-next-line react/no-array-index-key
                 <div key={index}>
                   <h2 className={commonStyles.heading}>{content.heading}</h2>
                   <div
                     // eslint-disable-next-line react/no-danger
-                    dangerouslySetInnerHTML={{ __html: content.body }}
+                    dangerouslySetInnerHTML={{
+                      __html: RichText.asHtml(content.body),
+                    }}
                     className={`${styles.body} ${commonStyles.body}`}
                   />
                 </div>
@@ -75,11 +100,21 @@ export default function Post({ post }: PostProps): ReactNode {
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  // const prismic = getPrismicClient();
-  // const posts = await prismic.query('');
+  const prismic = getPrismicClient();
+  const posts = await prismic.query(
+    [Prismic.predicates.at('document.type', 'post')],
+    {
+      fetch: ['post.title', 'post.subtitle', 'post.author', 'post.content'],
+    }
+  );
+  const paths = posts.results.map(result => ({
+    params: {
+      slug: result.uid,
+    },
+  }));
   return {
-    paths: [],
-    fallback: 'blocking',
+    paths,
+    fallback: true,
   };
 };
 
@@ -89,28 +124,20 @@ export const getStaticProps: GetStaticProps = async context => {
   const response = await prismic.getByUID('post', String(slug), {});
 
   const post = {
-    first_publication_date: format(
-      new Date(response.first_publication_date),
-      'd MMM yyyy',
-      {
-        locale: ptBR,
-      }
-    ),
+    first_publication_date: response.first_publication_date,
+    uid: response.uid,
     data: {
       title: response.data.title,
       banner: { url: response.data.banner.url },
       author: response.data.author,
-      content: response.data.content.map(content => {
-        return {
-          heading: content.heading,
-          body: RichText.asHtml(content.body),
-        };
-      }),
+      content: response.data.content,
+      subtitle: response.data.subtitle,
     },
   };
   return {
     props: {
       post,
     },
+    redirect: 60 * 30,
   };
 };

@@ -33,25 +33,27 @@ export default function Home({ postsPagination }: HomeProps): ReactNode {
   const [results, setResults] = useState(postsPagination.results);
   const [nextPage, setNextPage] = useState(postsPagination.next_page);
   const getNextPage = (): void => {
-    fetch(nextPage)
-      .then(response => response.json())
-      .then(response => {
-        const newResults = response?.results.map(post => {
-          return {
-            uid: post.uid,
-            data: {
-              title: post.data.title,
-              subtitle: post.data.subtitle,
-              author: post.data.author,
-            },
-            first_publication_date: format(new Date(), 'd MMM yyyy', {
-              locale: ptBR,
-            }),
-          };
+    if (nextPage) {
+      fetch(nextPage)
+        .then(response => response.json())
+        .then(response => {
+          const newResults = response?.results.map(post => {
+            return {
+              uid: post.uid,
+              data: {
+                title: post.data.title,
+                subtitle: post.data.subtitle,
+                author: post.data.author,
+              },
+              first_publication_date: format(new Date(), 'd MMM yyyy', {
+                locale: ptBR,
+              }),
+            };
+          });
+          setResults([...results, ...newResults]);
+          setNextPage(response.next_page);
         });
-        setResults([...results, ...newResults]);
-        setNextPage(response.next_page);
-      });
+    }
   };
   return (
     <div className={commonStyles.container}>
@@ -69,7 +71,15 @@ export default function Home({ postsPagination }: HomeProps): ReactNode {
                     <div className={commonStyles.info}>
                       <p>
                         <FiCalendar />
-                        <span>{post.first_publication_date}</span>
+                        <span>
+                          {format(
+                            new Date(post.first_publication_date),
+                            'd MMM yyyy',
+                            {
+                              locale: ptBR,
+                            }
+                          )}
+                        </span>
                       </p>
                       <p>
                         <FiUser />
@@ -87,7 +97,7 @@ export default function Home({ postsPagination }: HomeProps): ReactNode {
               onClick={getNextPage}
               className={styles.loadMore}
             >
-              Carregar mais
+              Carregar mais posts
             </button>
           )}
         </main>
@@ -113,20 +123,15 @@ export const getStaticProps: GetStaticProps = async () => {
         subtitle: post.data.subtitle,
         author: post.data.author,
       },
-      first_publication_date: format(
-        new Date(post.first_publication_date),
-        'd MMM yyyy',
-        {
-          locale: ptBR,
-        }
-      ),
+      first_publication_date: post.first_publication_date,
     };
   });
   const { next_page } = postsResponse;
 
   return {
     props: {
-      postsPagination: { results, next_page },
+      postsPagination: { results, next_page: next_page || null },
     },
+    redirect: 60 * 30,
   };
 };
