@@ -46,9 +46,7 @@ export default function Home({ postsPagination }: HomeProps): ReactNode {
                 subtitle: post.data.subtitle,
                 author: post.data.author,
               },
-              first_publication_date: format(new Date(), 'd MMM yyyy', {
-                locale: ptBR,
-              }),
+              first_publication_date: post.first_publication_date,
             };
           });
           setResults([...results, ...newResults]);
@@ -67,7 +65,7 @@ export default function Home({ postsPagination }: HomeProps): ReactNode {
         <div className={styles.container}>
           <main>
             <div className={styles.postList}>
-              {results.map((post: Post) => {
+              {results?.map((post: Post) => {
                 return (
                   <Link href={`/post/${post.uid}`} key={post.uid}>
                     <a className={styles.postLink}>
