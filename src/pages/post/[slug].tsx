@@ -1,6 +1,7 @@
 import { ptBR } from 'date-fns/locale';
 import { GetStaticPaths, GetStaticProps } from 'next';
 import { format } from 'date-fns';
+import Head from 'next/head';
 import Prismic from '@prismicio/client';
 import { RichText } from 'prismic-dom';
 import { ReactNode } from 'react';
@@ -52,50 +53,55 @@ export default function Post({ post }: PostProps): ReactNode {
     return Math.ceil(numberOfWords / wordsPerMinutes);
   };
   return (
-    <div className={commonStyles.container}>
-      <Header />
-      <main className={styles.container}>
-        <img src={post.data.banner.url} alt={post.data.title} />
-        <article>
-          <h1 className={commonStyles.heading}>{post.data.title}</h1>
-          <div className={`${commonStyles.info} ${styles.info}`}>
-            <span>
-              <FiCalendar />
-              <p>
-                {format(new Date(post.first_publication_date), 'd MMM yyyy', {
-                  locale: ptBR,
-                })}
-              </p>
-            </span>
-            <span>
-              <FiUser />
-              <p>{post.data.author}</p>
-            </span>
-            <span>
-              <FiClock />
-              <p>{calcTime()} min</p>
-            </span>
-          </div>
-          <div className={`${styles.content} `}>
-            {post.data.content.map((content, index) => {
-              return (
-                // eslint-disable-next-line react/no-array-index-key
-                <div key={index}>
-                  <h2 className={commonStyles.heading}>{content.heading}</h2>
-                  <div
-                    // eslint-disable-next-line react/no-danger
-                    dangerouslySetInnerHTML={{
-                      __html: RichText.asHtml(content.body),
-                    }}
-                    className={`${styles.body} ${commonStyles.body}`}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        </article>
-      </main>
-    </div>
+    <>
+      <Head>
+        <title>{post.data.title} | spacetraveling</title>
+      </Head>
+      <div className={commonStyles.container}>
+        <Header />
+        <main className={styles.container}>
+          <img src={post.data.banner.url} alt={post.data.title} />
+          <article>
+            <h1 className={commonStyles.heading}>{post.data.title}</h1>
+            <div className={`${commonStyles.info} ${styles.info}`}>
+              <span>
+                <FiCalendar />
+                <p>
+                  {format(new Date(post.first_publication_date), 'd MMM yyyy', {
+                    locale: ptBR,
+                  })}
+                </p>
+              </span>
+              <span>
+                <FiUser />
+                <p>{post.data.author}</p>
+              </span>
+              <span>
+                <FiClock />
+                <p>{calcTime()} min</p>
+              </span>
+            </div>
+            <div className={`${styles.content} `}>
+              {post.data.content.map((content, index) => {
+                return (
+                  // eslint-disable-next-line react/no-array-index-key
+                  <div key={index}>
+                    <h2 className={commonStyles.heading}>{content.heading}</h2>
+                    <div
+                      // eslint-disable-next-line react/no-danger
+                      dangerouslySetInnerHTML={{
+                        __html: RichText.asHtml(content.body),
+                      }}
+                      className={`${styles.body} ${commonStyles.body}`}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </article>
+        </main>
+      </div>
+    </>
   );
 }
 

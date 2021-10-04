@@ -1,6 +1,7 @@
 import { GetStaticProps } from 'next';
 import { ReactNode, useState } from 'react';
 import Prismic from '@prismicio/client';
+import Head from 'next/head';
 import Link from 'next/link';
 import { FiCalendar, FiUser } from 'react-icons/fi/';
 import { format } from 'date-fns';
@@ -56,53 +57,60 @@ export default function Home({ postsPagination }: HomeProps): ReactNode {
     }
   };
   return (
-    <div className={commonStyles.container}>
-      <Header />
+    <>
+      <Head>
+        <title>Home | spacetraveling</title>
+      </Head>
+      <div className={commonStyles.container}>
+        <Header />
 
-      <div className={styles.container}>
-        <main>
-          <div className={styles.postList}>
-            {results.map((post: Post) => {
-              return (
-                <Link href={`/post/${post.uid}`} key={post.uid}>
-                  <a className={styles.postLink}>
-                    <h2 className={commonStyles.heading}>{post.data.title}</h2>
-                    <p className={commonStyles.body}>{post.data.subtitle}</p>
-                    <div className={commonStyles.info}>
-                      <p>
-                        <FiCalendar />
-                        <span>
-                          {format(
-                            new Date(post.first_publication_date),
-                            'd MMM yyyy',
-                            {
-                              locale: ptBR,
-                            }
-                          )}
-                        </span>
-                      </p>
-                      <p>
-                        <FiUser />
-                        <span>{post.data.author}</span>
-                      </p>
-                    </div>
-                  </a>
-                </Link>
-              );
-            })}
-          </div>
-          {nextPage && (
-            <button
-              type="button"
-              onClick={getNextPage}
-              className={styles.loadMore}
-            >
-              Carregar mais posts
-            </button>
-          )}
-        </main>
+        <div className={styles.container}>
+          <main>
+            <div className={styles.postList}>
+              {results.map((post: Post) => {
+                return (
+                  <Link href={`/post/${post.uid}`} key={post.uid}>
+                    <a className={styles.postLink}>
+                      <h2 className={commonStyles.heading}>
+                        {post.data.title}
+                      </h2>
+                      <p className={commonStyles.body}>{post.data.subtitle}</p>
+                      <div className={commonStyles.info}>
+                        <p>
+                          <FiCalendar />
+                          <span>
+                            {format(
+                              new Date(post.first_publication_date),
+                              'd MMM yyyy',
+                              {
+                                locale: ptBR,
+                              }
+                            )}
+                          </span>
+                        </p>
+                        <p>
+                          <FiUser />
+                          <span>{post.data.author}</span>
+                        </p>
+                      </div>
+                    </a>
+                  </Link>
+                );
+              })}
+            </div>
+            {nextPage && (
+              <button
+                type="button"
+                onClick={getNextPage}
+                className={styles.loadMore}
+              >
+                Carregar mais posts
+              </button>
+            )}
+          </main>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
